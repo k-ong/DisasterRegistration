@@ -63,6 +63,40 @@ registration_wizard = Wizard::Wizard.new(content: [
 ])
 ServiceProvider.create!(name: 'FirstStop', wizard: registration_wizard, special_role: :registration)
 
-ServiceProvider.create!(name: 'Australian Red Cross', wizard: registration_wizard, person: Person.all[1..10])
+red_cross = ServiceProvider.create!({})
+red_cross_wizard = Wizard::Wizard.new(content: [
+    Wizard::WizardNode.new(name: 'wizard.welcome', content: [
+      Wizard::Headline.new(text: "Hello, nice to meet you."),
+      Wizard::Paragraph.new(text: "This is the Red Cross Entry Page"),
+      Wizard::Paragraph.new(text: "So, before you start doing something good for the world @ RHoK, please register your details with us. We will print your very own name tag for this weekend! If you want to connect with others, simply scan the QR code on their name tag and add them to your contacts."),
+      Wizard::NextButton.new(target: 'wizard.basic_information', label: 'Start my registration')
+    ]),
+
+    Wizard::WizardNode.new(name: 'wizard.basic_information', content: [
+      Wizard::Headline.new(text: "Who are you?"),
+      Wizard::Split.new(content: [
+                           Wizard::Input.new(attribute: "first_name", label: 'First name', placeholder: ''),
+                           Wizard::Input.new(attribute: "last_name", label: 'Last name', placeholder: '')
+                       ]),
+      Wizard::Input.new(attribute: "email", label: 'E-Mail', placeholder: ''),
+      Wizard::Input.new(attribute: "current_contact_phone", label: 'Phone number', placeholder: ''),
+      Wizard::NextButton.new(target: 'wizard.contact_details', label: 'Next')
+    ]),
+
+    Wizard::WizardNode.new(name: 'wizard.contact_details', content: [
+      Wizard::Headline.new(text: "What information would you like to share?"),
+      Wizard::Paragraph.new(text: "Note: Everybody who scans the QR code on your badge will be able to see these details, so please only enter details that you are happy to share."),
+      Wizard::Input.new(attribute: "special_power", label: 'What is your special power', placeholder: ''),
+      Wizard::SubmitButton.new(target: 'wizard.register', label: 'Register')
+    ]),
+
+    Wizard::WizardNode.new(name: 'wizard.register', content: [
+      Wizard::Headline.new(text: "Thank you for your registration"),
+      Wizard::Paragraph.new(text: "Please collect your name badge from the printing station and start networking with your fellow hackers."),
+      Wizard::Link.new(target: "/service_provider/#{red_cross.id}", label: 'Start over')
+    ])
+])  
+red_cross.update_attributes!({name: 'Australian Red Cross', wizard: red_cross_wizard, person: Person.all[1..10]})
+red_cross.save!
 ServiceProvider.create!(name: 'Lions Clubs', person: Person.all[5..15])
 ServiceProvider.create!(name: 'The Salvation Army', person: Person.all[10..20])
